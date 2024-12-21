@@ -39,7 +39,7 @@ class InfproConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 # Creăm intrarea (cu opțiunile salvate în `options`)
                 return self.async_create_entry(
                     title="Cutremur România (INFP)",
-                    data={},  # dacă aveai alte date, le puneai aici
+                    data={},  # dacă ai alte date, pune-le aici
                     options={"update_interval": update_interval},
                 )
 
@@ -59,7 +59,7 @@ class InfproConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class InfproOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle the options flow for modificarea ulterioară a intervalului."""
+    """Handle the options flow pentru modificarea ulterioară a intervalului."""
 
     def __init__(self, config_entry):
         """Initialize the options flow."""
@@ -81,12 +81,19 @@ class InfproOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["base"] = "invalid_update_interval"
                 _LOGGER.error("Interval invalid în OptionsFlow: %s", update_interval)
             else:
-                # Salvează noile opțiuni
+                # 1. Luăm dicționarul actual de opțiuni
+                old_options = dict(self.config_entry.options)
+                _LOGGER.debug("Old options before merge: %s", old_options)
+
+                # 2. Actualizăm doar câmpurile care ne interesează
+                old_options["update_interval"] = update_interval
+
+                # 3. Îl salvăm în entry
                 self.hass.config_entries.async_update_entry(
                     self.config_entry,
-                    options=user_input,
+                    options=old_options,  # punem TOT dicționarul
                 )
-                _LOGGER.debug("Options updated to: %s", self.config_entry.options)
+                _LOGGER.debug("Options updated (merged) to: %s", self.config_entry.options)
 
                 # IMPORTANT: forțează reload, astfel încât senzorul
                 # să reia track_time_interval cu noua valoare
@@ -96,7 +103,8 @@ class InfproOptionsFlowHandler(config_entries.OptionsFlow):
 
                 return self.async_create_entry(title="", data={})
 
-        current_options = self.config_entry.options
+        # Afișăm formularul
+        current_options = dict(self.config_entry.options)
         _LOGGER.debug("Current options in OptionsFlow: %s", current_options)
 
         data_schema = vol.Schema(
