@@ -10,11 +10,35 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 
 from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL
-from .json_manager import read_json  # Importă funcția pentru citirea JSON
+from .json_manager import read_json  # Importă funcția pentru citirea și scrierea JSON
 
 _LOGGER = logging.getLogger(__name__)
 
 URL = "http://shakemap4.infp.ro/atlas/data/event.pf"
+
+# Funcția care convertește intensitatea în textul corespunzător
+def intensity_to_text(intensity):
+    """Convertește intensitatea numerică într-un text prietenos."""
+    if intensity == "I":
+        return "Neresimțit"
+    elif intensity in ["II", "III"]:
+        return "Slab"
+    elif intensity == "IV":
+        return "Ușor"
+    elif intensity == "V":
+        return "Moderat"
+    elif intensity == "VI":
+        return "Puternic"
+    elif intensity == "VII":
+        return "Foarte puternic"
+    elif intensity == "VIII":
+        return "Sever"
+    elif intensity == "IX":
+        return "Violeant"
+    elif intensity == ["X", "XI", "XII", "XIII"]:
+        return "Extrem"
+    else:
+        return "Necunoscut"
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
     """Configurează senzorul de cutremur INFP."""
@@ -100,18 +124,22 @@ class InfpEarthquakeSensor(Entity):
 
                 # Exemplu: Magnitudinea ML devine `state` al senzorului
                 self._state = parsed_data.get("mag_ml", "Necunoscut")
+
+                intensity = parsed_data.get("intensity", "I")
+                intensity_text = intensity_to_text(intensity)  # Convertim intensitatea în text
+
                 self._attributes = {
                     "ID": parsed_data.get("smevid"),
-                    "Magnitudine": parsed_data.get("mag_ml"),
+                    "Magnitudine": self._state,
                     "Magnitudinea Momentului (Mw)": parsed_data.get("mag_mw"),
-                    "Ora (UTC)": parsed_data.get("origin_time"),
                     "Ora locală": parsed_data.get("local_time"),
                     "Latitudine": parsed_data.get("elat"),
                     "Longitudine": parsed_data.get("elon"),
                     "Adâncime (km)": parsed_data.get("depth"),
                     "Zonă": parsed_data.get("location"),
-                    "Intensitate": parsed_data.get("intensity"),
+                    "Intensitate": intensity_text,  # Afișăm intensitatea în text
                 }
+
                 _LOGGER.debug("Starea senzorului a fost actualizată la: %s", self._state)
             except Exception as e:
                 _LOGGER.error("Eroare la actualizarea datelor: %s", str(e))
