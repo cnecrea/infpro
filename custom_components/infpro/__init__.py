@@ -1,10 +1,11 @@
 import logging
 from datetime import timedelta
+import os
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL
-from .json_manager import read_json, write_json
+from .json_manager import read_json, write_json, get_json_path
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -56,5 +57,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Șterge datele asociate cu această integrare
         hass.data[DOMAIN].pop(entry.entry_id, None)
         _LOGGER.debug("Integrarea a fost dezinstalată cu succes.")
+
+        # Șterge fișierul JSON asociat
+        json_path = get_json_path(hass, DOMAIN)
+        if os.path.exists(json_path):
+            try:
+                os.remove(json_path)
+                _LOGGER.debug("Fișierul JSON %s a fost șters.", json_path)
+            except Exception as e:
+                _LOGGER.error("Eroare la ștergerea fișierului JSON %s: %s", json_path, e)
 
     return unload_ok
