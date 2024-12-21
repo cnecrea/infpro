@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
@@ -76,14 +77,20 @@ class InfproOptionsFlowHandler(config_entries.OptionsFlow):
                     _LOGGER.error("Nu s-a reușit scrierea în JSON: %s", e)
                     errors["base"] = "eroare_fisier"
 
-                # Actualizează integrarea
+                # Actualizează doar coordonatorul fără a dezinstala integrarea
+                coordinator = self.hass.data[DOMAIN].get(self.config_entry.entry_id, {}).get("coordinator")
+                if coordinator:
+                    coordinator.update_interval = timedelta(seconds=update_interval)
+                    _LOGGER.debug("Intervalul de actualizare al coordonatorului a fost actualizat la: %s secunde", update_interval)
+                else:
+                    _LOGGER.warning("Nu s-a găsit un coordonator activ pentru actualizare.")
+
                 self.hass.config_entries.async_update_entry(
                     self.config_entry,
                     options={"update_interval": update_interval},
                 )
                 _LOGGER.debug("Opțiuni după actualizarea integrării: %s", self.config_entry.options)
 
-                await self.hass.config_entries.async_reload(self.config_entry.entry_id)
                 return self.async_create_entry(title="", data={})
 
         # Citește opțiunile curente
