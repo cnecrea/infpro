@@ -1,13 +1,16 @@
 import logging
 from datetime import timedelta
+
 import aiohttp
+
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
+
 from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL
-from .json_manager import read_json, write_json  # Importă funcția pentru citirea și scrierea JSON
+from .json_manager import read_json  # Importă funcția pentru citirea și scrierea JSON
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +35,7 @@ def intensity_to_text(intensity):
         return "Sever"
     elif intensity == "IX":
         return "Violeant"
-    elif intensity in ["X", "XI", "XII", "XIII"]:
+    elif intensity == ["X", "XI", "XII", "XIII"]:
         return "Extrem"
     else:
         return "Necunoscut"
@@ -69,10 +72,6 @@ class InfpEarthquakeSensor(Entity):
         self._attributes = {}
         self._name = "Cutremur"
         self._update_task = None
-        self._last_earthquake_id = None  # Adăugăm variabila pentru salvarea ID-ului
-        self._last_update_time = None
-        self._stabilization_time = timedelta(minutes=5)  # Timp de stabilizare de 10 minute
-        self.alerta = "Nu"  # Inițializăm alerta cu "NU"
 
         _LOGGER.debug(
             "Senzorul inițializat cu intervalul de actualizare: %s secunde",
@@ -141,37 +140,7 @@ class InfpEarthquakeSensor(Entity):
                     "Intensitate": intensity_text,  # Afișăm intensitatea în text
                 }
 
-                # Verificăm dacă ID-ul cutremurului s-a schimbat și dacă datele s-au stabilizat
-                current_earthquake_id = parsed_data.get("smevid")
-                stored_data = await read_json(self.hass, DOMAIN)
-                last_saved_id = stored_data.get("last_earthquake_id", None)
-
-                _LOGGER.debug(f"Comparăm ID-ul curent: {current_earthquake_id} cu ID-ul salvat: {last_saved_id}")  # Debug pentru compararea ID-urilor
-
-                if current_earthquake_id != last_saved_id:
-                    if self._last_update_time and (now - self._last_update_time) < self._stabilization_time:
-                        _LOGGER.debug("Așteptăm stabilizarea datelor pentru a confirma cutremurul nou.")
-                        return  # Nu actualiza starea senzorului
-
-                    # Dacă s-a stabilizat, marcare ca "NOU"
-                    self._last_earthquake_id = current_earthquake_id
-                    self._last_update_time = now
-                    stored_data["last_earthquake_id"] = current_earthquake_id
-                    await write_json(self.hass, DOMAIN, stored_data)
-                    self.alerta = "Da"  # Setăm alerta la "DA"
-                    _LOGGER.debug("Cutremurul este acum 'NOU', se lanseaza alerta.")
-
-                else:
-                    # Dacă ID-ul nu s-a schimbat, păstrează starea ca "VECHI"
-                    self.alerta = "Nu"  # Setăm alerta la "NU"
-                    _LOGGER.debug("Cutremurul este deja înregistrat ca vechi, nu este necesara alerta.")
-
-                self._attributes["Alerta"] = self.alerta  # Adăugăm alerta ca atribut
-                _LOGGER.debug("Alerta este: %s", self.alerta)  # Debug pentru alerta
-                self.async_write_ha_state()  # Forțează Home Assistant să rescrie starea
-
                 _LOGGER.debug("Starea senzorului a fost actualizată la: %s", self._state)
-
             except Exception as e:
                 _LOGGER.error("Eroare la actualizarea datelor: %s", str(e))
                 self._attributes = {"Eroare": str(e)}
