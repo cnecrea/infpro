@@ -9,21 +9,21 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class InfproConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle the config flow for Cutremur România (INFP)."""
+    """Gestionează procesul de configurare pentru Cutremur România (INFP)."""
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
         """Prima etapă de configurare."""
         errors = {}
         if user_input is not None:
-            _LOGGER.debug("User input received: %s", user_input)
+            _LOGGER.debug("Date primite de la utilizator: %s", user_input)
             update_interval = user_input.get("update_interval", DEFAULT_UPDATE_INTERVAL)
             if not 10 <= update_interval <= 3600:
-                errors["base"] = "invalid_update_interval"
+                errors["base"] = "interval_actualizare_invalid"
             else:
                 await self.async_set_unique_id(DOMAIN)
                 self._abort_if_unique_id_configured()
-                _LOGGER.debug("Creating entry with options: %s", {"update_interval": update_interval})
+                _LOGGER.debug("Creare integrare cu opțiunile: %s", {"update_interval": update_interval})
                 return self.async_create_entry(
                     title="Cutremur România (INFP)",
                     data={},
@@ -38,15 +38,15 @@ class InfproConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        """Return the options flow."""
+        """Returnează fluxul de opțiuni."""
         return InfproOptionsFlowHandler(config_entry)
 
 
 class InfproOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle the options flow."""
+    """Gestionează fluxul de opțiuni."""
 
     def __init__(self, config_entry):
-        """Initialize the options flow."""
+        """Inițializează fluxul de opțiuni."""
         self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
@@ -54,34 +54,34 @@ class InfproOptionsFlowHandler(config_entries.OptionsFlow):
         errors = {}
         if user_input is not None:
             update_interval = user_input.get("update_interval", DEFAULT_UPDATE_INTERVAL)
-            _LOGGER.debug("User input for options flow: %s", user_input)
+            _LOGGER.debug("Date primite pentru fluxul de opțiuni: %s", user_input)
 
             if not 10 <= update_interval <= 3600:
-                errors["base"] = "invalid_update_interval"
+                errors["base"] = "interval_actualizare_invalid"
             else:
                 # Citește datele existente din JSON
                 try:
                     data = await read_json(self.hass, DOMAIN)
-                    _LOGGER.debug("Data from JSON before update: %s", data)
+                    _LOGGER.debug("Date din JSON înainte de actualizare: %s", data)
                 except Exception as e:
-                    _LOGGER.error("Failed to read JSON: %s", e)
+                    _LOGGER.error("Nu s-a reușit citirea JSON-ului: %s", e)
                     data = {}
 
                 # Actualizează `update_interval` în JSON
                 data["update_interval"] = update_interval
                 try:
                     await write_json(self.hass, DOMAIN, data)
-                    _LOGGER.debug("Data written to JSON: %s", data)
+                    _LOGGER.debug("Date scrise în JSON: %s", data)
                 except Exception as e:
-                    _LOGGER.error("Failed to write JSON: %s", e)
-                    errors["base"] = "file_error"
+                    _LOGGER.error("Nu s-a reușit scrierea în JSON: %s", e)
+                    errors["base"] = "eroare_fisier"
 
-                # Actualizează entry-ul
+                # Actualizează integrarea
                 self.hass.config_entries.async_update_entry(
                     self.config_entry,
                     options={"update_interval": update_interval},
                 )
-                _LOGGER.debug("Options after async_update_entry: %s", self.config_entry.options)
+                _LOGGER.debug("Opțiuni după actualizarea integrării: %s", self.config_entry.options)
 
                 await self.hass.config_entries.async_reload(self.config_entry.entry_id)
                 return self.async_create_entry(title="", data={})
@@ -91,10 +91,10 @@ class InfproOptionsFlowHandler(config_entries.OptionsFlow):
             data = await read_json(self.hass, DOMAIN)
             current_update_interval = data.get("update_interval", DEFAULT_UPDATE_INTERVAL)
         except Exception as e:
-            _LOGGER.error("Failed to read JSON: %s", e)
+            _LOGGER.error("Nu s-a reușit citirea JSON-ului: %s", e)
             current_update_interval = DEFAULT_UPDATE_INTERVAL
 
-        _LOGGER.debug("Current update_interval in JSON: %s", current_update_interval)
+        _LOGGER.debug("Intervalul curent de actualizare din JSON: %s", current_update_interval)
 
         data_schema = vol.Schema(
             {vol.Required("update_interval", default=current_update_interval): vol.Coerce(int)}
