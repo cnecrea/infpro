@@ -18,9 +18,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Configurarea integrării dintr-o intrare de configurare."""
     _LOGGER.debug("Se configurează integrarea: data=%s, options=%s", entry.data, entry.options)
 
-    # Citește `update_interval` din JSON
     try:
+        # Citește datele din JSON sau folosește opțiunile entry
         data = await read_json(hass, DOMAIN)
+        if not data:  # Dacă fișierul JSON este gol/inexistent
+            data = {"update_interval": entry.options.get("update_interval", DEFAULT_UPDATE_INTERVAL)}
+            await write_json(hass, DOMAIN, data)  # Salvează valorile din entry în JSON
+            _LOGGER.debug("Fișierul JSON a fost creat cu datele: %s", data)
+
         update_interval = data.get("update_interval", DEFAULT_UPDATE_INTERVAL)
         _LOGGER.debug("Intervalul de actualizare din JSON în timpul configurării: %s secunde", update_interval)
 
@@ -53,6 +58,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Dezinstalează platforma `sensor`
     unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor"])
+    _LOGGER.debug("Rezultatul dezinstalării platformelor: %s", unload_ok)
+
     if unload_ok:
         # Șterge datele asociate cu această integrare
         hass.data[DOMAIN].pop(entry.entry_id, None)
@@ -66,5 +73,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 _LOGGER.debug("Fișierul JSON %s a fost șters.", json_path)
             except Exception as e:
                 _LOGGER.error("Eroare la ștergerea fișierului JSON %s: %s", json_path, e)
+    else:
+        _LOGGER.error("Dezinstalarea platformelor a eșuat.")
 
     return unload_ok
