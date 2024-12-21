@@ -4,51 +4,57 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL
+from .json_manager import read_json, write_json
 
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up the integration via YAML (if applicable)."""
-    _LOGGER.debug("async_setup called for domain %s", DOMAIN)
+    """Configurarea integrării din YAML (dacă este cazul)."""
+    _LOGGER.debug("async_setup a fost apelat pentru domeniul %s", DOMAIN)
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up the integration via a config entry."""
-    _LOGGER.debug("Setting up entry: data=%s, options=%s", entry.data, entry.options)
+    """Configurarea integrării dintr-o intrare de configurare."""
+    _LOGGER.debug("Se configurează integrarea: data=%s, options=%s", entry.data, entry.options)
 
-    # Asigură-te că `update_interval` există în opțiuni sau adaugă o valoare implicită
-    if "update_interval" not in entry.options:
-        _LOGGER.warning("Options are empty, adding default values")
-        hass.config_entries.async_update_entry(
-            entry,
-            options={"update_interval": DEFAULT_UPDATE_INTERVAL},
-        )
+    # Citește `update_interval` din JSON
+    try:
+        data = await read_json(hass, DOMAIN)
+        update_interval = data.get("update_interval", DEFAULT_UPDATE_INTERVAL)
+        _LOGGER.debug("Intervalul de actualizare din JSON în timpul configurării: %s secunde", update_interval)
 
-    update_interval = timedelta(seconds=entry.options.get("update_interval", DEFAULT_UPDATE_INTERVAL))
-    _LOGGER.debug("Using update_interval: %s seconds", update_interval.total_seconds())
+        # Suprascrie `entry.options` cu valoarea din JSON, dacă e cazul
+        if entry.options.get("update_interval") != update_interval:
+            hass.config_entries.async_update_entry(
+                entry,
+                options={"update_interval": update_interval},
+            )
+            _LOGGER.debug("Opțiunile au fost actualizate din JSON: %s", entry.options)
 
-    # Creează un DataUpdateCoordinator pentru gestionarea actualizărilor
-    hass.data.setdefault(DOMAIN, {})
-    coordinator = DataUpdateCoordinator(
-        hass,
-        _LOGGER,
-        name=f"{DOMAIN} update coordinator",
-        update_interval=update_interval,
-    )
-    hass.data[DOMAIN][entry.entry_id] = {"coordinator": coordinator}
+        # Salvează `update_interval` în `hass.data` pentru acces rapid
+        hass.data.setdefault(DOMAIN, {})
+        hass.data[DOMAIN][entry.entry_id] = {
+            "update_interval": update_interval
+        }
 
-    # Forward către platforma `sensor`
-    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
+        # Încarcă platformele necesare (de exemplu, `sensor`)
+        await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
+        _LOGGER.debug("Configurarea integrării a fost finalizată cu succes.")
+        return True
 
-    return True
+    except Exception as e:
+        _LOGGER.error("Eroare în timpul configurării: %s", e)
+        return False
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload the integration."""
-    _LOGGER.debug("Unloading entry: entry_id=%s, data=%s, options=%s", entry.entry_id, entry.data, entry.options)
+    """Dezinstalează integrarea."""
+    _LOGGER.debug("Se dezinstalează integrarea: entry_id=%s, data=%s, options=%s", entry.entry_id, entry.data, entry.options)
 
     # Dezinstalează platforma `sensor`
     unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor"])
     if unload_ok:
+        # Șterge datele asociate cu această integrare
         hass.data[DOMAIN].pop(entry.entry_id, None)
+        _LOGGER.debug("Integrarea a fost dezinstalată cu succes.")
 
     return unload_ok
