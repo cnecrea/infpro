@@ -1,0 +1,34 @@
+{
+  "title": "Cutremur România (INFP)",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configurează Cutremur România (INFP)",
+        "description": "Introduceți intervalul de actualizare (în secunde).",
+        "data": {
+          "update_interval": "Interval de actualizare (secunde)"
+        }
+      }
+    },
+    "error": {
+      "invalid_update_interval": "Interval invalid. Trebuie să fie între 10 și 3600."
+    },
+    "abort": {
+      "already_configured": "Integrarea este deja configurată."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Setări suplimentare pentru Cutremur România (INFP)",
+        "description": "Modifică opțiunile dorite.",
+        "data": {
+          "update_interval": "Interval de actualizare (secunde)"
+        }
+      }
+    },
+    "error": {
+      "invalid_update_interval": "Interval invalid. Trebuie să fie între 10 și 3600."
+    }
+  }
+}
