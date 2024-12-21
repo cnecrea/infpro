@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 
 from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL
+from .json_manager import read_json  # Import funcție pentru citirea JSON
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,16 +21,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     """Configurează senzorul de cutremur INFP."""
     _LOGGER.debug("Inițiem configurarea senzorului Cutremur România (INFP).")
     try:
-        sensor = InfpEarthquakeSensor(hass, entry)
+        # Citește configurația curentă din JSON
+        data = await read_json(hass, DOMAIN)
+        update_interval = data.get("update_interval", DEFAULT_UPDATE_INTERVAL)
+        _LOGGER.debug("Update interval from JSON: %s", update_interval)
+
+        # Creează instanța senzorului
+        sensor = InfpEarthquakeSensor(hass, entry, update_interval)
         async_add_entities([sensor], update_before_add=True)
         _LOGGER.debug("Senzorul a fost adăugat cu succes.")
 
-        # Intervalul curent (la fiecare load / reload)
-        update_interval = timedelta(seconds=sensor._update_interval)
-
         # Programează actualizările periodice
-        async_track_time_interval(hass, sensor.async_update, update_interval)
-        _LOGGER.debug("Am creat track_time_interval cu intervalul %s sec.", sensor._update_interval)
+        async_track_time_interval(
+            hass, sensor.async_update, timedelta(seconds=update_interval)
+        )
+        _LOGGER.debug("Am creat track_time_interval cu intervalul %s sec.", update_interval)
     except Exception as e:
         _LOGGER.error("A apărut o eroare la configurarea senzorului: %s", str(e))
 
@@ -37,16 +43,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 class InfpEarthquakeSensor(Entity):
     """Reprezintă senzorul de cutremur INFP."""
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry):
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, update_interval):
         self.hass = hass
         self.entry = entry
-
         self._state = None
         self._attributes = {}
         self._name = "Cutremur"
-
-        # Dacă userul nu a setat nimic în Options Flow, se folosește DEFAULT_UPDATE_INTERVAL
-        self._update_interval = entry.options.get("update_interval", DEFAULT_UPDATE_INTERVAL)
+        self._update_interval = update_interval
 
         _LOGGER.debug(
             "Senzorul inițializat cu intervalul de actualizare: %s secunde",
@@ -130,21 +133,7 @@ class InfpEarthquakeSensor(Entity):
                 raise Exception(error_message)
 
             raw_data = await response.text()
-
-            # Pentru a evita logarea liniilor gen `[default]`, `[eq]`, sau comentarii # 
-            # construim o listă cu doar liniile care conțin '=' și NU încep cu '#' / '[' / whitespace
-            lines_filtered = []
-            for line in raw_data.splitlines():
-                line = line.strip()
-                # Dacă linia conține '=', o păstrăm pentru log (de ex. "mag_ml=3.2")
-                # Omitem și liniile care arată ca [default], [eq], etc.
-                if "=" in line and not line.startswith("#") and not line.startswith("["):
-                    lines_filtered.append(line)
-
-            # Prelucrăm primele 100 de caractere (din liniile filtrate) pt. log
-            preview = "\n".join(lines_filtered)[:100]
             _LOGGER.debug("Datele au fost preluate")
-
             return raw_data
 
     @staticmethod
@@ -156,7 +145,6 @@ class InfpEarthquakeSensor(Entity):
         event_data = {}
         for line in data.splitlines():
             line = line.strip()
-            # Ignorăm liniile goale, care încep cu '#', '[' sau nu conțin '='
             if not line or line.startswith("#") or line.startswith("["):
                 continue
             if "=" in line:
