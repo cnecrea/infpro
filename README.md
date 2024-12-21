@@ -20,6 +20,7 @@ Această integrare pentru Home Assistant oferă un senzor care monitorizează da
   - **Adâncime (km)**: Adâncimea epicentrului.
   - **Zonă**: Zona epicentrului.
   - **Intensitate**: Intensitatea percepută.
+  - **Alerta**: Da/Nu (folosește atribut pentru automatizări)
 
 ---
 
