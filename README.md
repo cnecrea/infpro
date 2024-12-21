@@ -7,9 +7,6 @@ Această integrare pentru Home Assistant oferă un senzor care monitorizează da
 - **🔍 Monitorizare Cutremure**: 
   - Monitorizează ultimul cutremur detectat în România.
 
-- **🔍 Monitorizare Cutremure**: 
-  - Monitorizează ultimul cutremur detectat în România.
-
 - **📊 Atribute disponibile**:
   - **ID**: ID-ul evenimentului seismic.
   - **Magnitudine (ML)**: Magnitudinea pe scara locală.
