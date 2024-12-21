@@ -58,9 +58,14 @@ Creează o automatizare pentru a primi notificări atunci când magnitudinea unu
 
 ```yaml
 alias: Notificare Cutremur
-description: Notificare dacă magnitudinea depășește 4.5
+description: Notificare dacă magnitudinea depășește 4.5 și alerta este "Da"
 trigger:
-  - platform: numeric_state
+  - platform: state
+    entity_id: sensor.cutremur
+    attribute: "Alerta"
+    to: "Da"
+condition:
+  - condition: numeric_state
     entity_id: sensor.cutremur
     above: 4.5
 action:
