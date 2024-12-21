@@ -29,7 +29,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
         # Programează actualizările periodice
         async_track_time_interval(hass, sensor.async_update, update_interval)
-
+        _LOGGER.debug("Am creat track_time_interval cu intervalul %s sec.", sensor._update_interval)
     except Exception as e:
         _LOGGER.error("A apărut o eroare la configurarea senzorului: %s", str(e))
 
@@ -41,19 +41,22 @@ class InfpEarthquakeSensor(Entity):
         self.hass = hass
         self.entry = entry
 
-        # Valorile implicite
         self._state = None
         self._attributes = {}
         self._name = "Cutremur"
 
-        # Citim intervalul din entry.options (setat de user),
-        # altfel folosim DEFAULT_UPDATE_INTERVAL
+        # Dacă userul nu a setat nimic în Options Flow, se folosește DEFAULT_UPDATE_INTERVAL
         self._update_interval = entry.options.get("update_interval", DEFAULT_UPDATE_INTERVAL)
 
         _LOGGER.debug(
             "Senzorul inițializat cu intervalul de actualizare: %s secunde",
             self._update_interval,
         )
+
+    @property
+    def should_poll(self) -> bool:
+        """Entitatea nu are nevoie de polling din partea HA."""
+        return False
 
     @property
     def unique_id(self):
@@ -88,10 +91,13 @@ class InfpEarthquakeSensor(Entity):
 
         async with aiohttp.ClientSession() as session:
             try:
-                data = await self.fetch_data(session)
-                parsed_data = self.parse_event_data(data)
+                # Preluăm conținutul fișierului
+                raw_data = await self.fetch_data(session)
+                # Parsăm datele utile
+                parsed_data = self.parse_event_data(raw_data)
                 _LOGGER.debug("Datele au fost analizate cu succes")
 
+                # Exemplu: Magnitudinea ML devine `state` al senzorului
                 self._state = parsed_data.get("mag_ml", "Necunoscut")
                 self._attributes = {
                     "ID": parsed_data.get("smevid"),
@@ -111,27 +117,49 @@ class InfpEarthquakeSensor(Entity):
                 self._attributes = {"Eroare": str(e)}
 
     @staticmethod
-    async def fetch_data(session: aiohttp.ClientSession):
-        """Obține date de la URL-ul INFP."""
+    async def fetch_data(session: aiohttp.ClientSession) -> str:
+        """
+        Obține date de la URL-ul INFP.
+        Returnează conținutul fișierului .pf ca string.
+        """
         _LOGGER.debug("Se încearcă preluarea datelor de la URL: %s", URL)
         async with session.get(URL) as response:
             if response.status != 200:
                 error_message = f"Preluarea datelor a eșuat cu codul de status: {response.status}"
                 _LOGGER.error(error_message)
                 raise Exception(error_message)
-            data = await response.text()
-            _LOGGER.debug(
-                "Datele au fost preluate cu succes (primele 100 caractere): %s",
-                data[:100]
-            )
-            return data
+
+            raw_data = await response.text()
+
+            # Pentru a evita logarea liniilor gen `[default]`, `[eq]`, sau comentarii # 
+            # construim o listă cu doar liniile care conțin '=' și NU încep cu '#' / '[' / whitespace
+            lines_filtered = []
+            for line in raw_data.splitlines():
+                line = line.strip()
+                # Dacă linia conține '=', o păstrăm pentru log (de ex. "mag_ml=3.2")
+                # Omitem și liniile care arată ca [default], [eq], etc.
+                if "=" in line and not line.startswith("#") and not line.startswith("["):
+                    lines_filtered.append(line)
+
+            # Prelucrăm primele 100 de caractere (din liniile filtrate) pt. log
+            preview = "\n".join(lines_filtered)[:100]
+            _LOGGER.debug("Datele au fost preluate")
+
+            return raw_data
 
     @staticmethod
     def parse_event_data(data: str):
-        """Analizează datele INFP într-un dicționar (cheie=valoare)."""
+        """
+        Analizează datele .pf într-un dicționar (cheie=valoare),
+        omite orice linie care nu conține "=" sau începe cu # / [.
+        """
         event_data = {}
         for line in data.splitlines():
-            if "=" in line and not line.startswith("#"):
+            line = line.strip()
+            # Ignorăm liniile goale, care încep cu '#', '[' sau nu conțin '='
+            if not line or line.startswith("#") or line.startswith("["):
+                continue
+            if "=" in line:
                 key, value = line.split("=", 1)
                 event_data[key.strip()] = value.strip()
         return event_data
