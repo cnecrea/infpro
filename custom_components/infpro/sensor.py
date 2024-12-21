@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 
 from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL
-from .json_manager import read_json  # Import funcție pentru citirea JSON
+from .json_manager import read_json  # Importă funcția pentru citirea JSON
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         # Citește configurația curentă din JSON
         data = await read_json(hass, DOMAIN)
         update_interval = data.get("update_interval", DEFAULT_UPDATE_INTERVAL)
-        _LOGGER.debug("Update interval from JSON: %s", update_interval)
+        _LOGGER.debug("Intervalul de actualizare din JSON: %s secunde", update_interval)
 
         # Creează instanța senzorului
         sensor = InfpEarthquakeSensor(hass, entry, update_interval)
@@ -35,21 +35,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         async_track_time_interval(
             hass, sensor.async_update, timedelta(seconds=update_interval)
         )
-        _LOGGER.debug("Am creat track_time_interval cu intervalul %s sec.", update_interval)
+        _LOGGER.debug("Am creat track_time_interval cu intervalul %s secunde.", update_interval)
     except Exception as e:
         _LOGGER.error("A apărut o eroare la configurarea senzorului: %s", str(e))
 
 
 class InfpEarthquakeSensor(Entity):
     """Reprezintă senzorul de cutremur INFP."""
-
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, update_interval):
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, update_interval: int):
         self.hass = hass
         self.entry = entry
+        self._update_interval = update_interval
         self._state = None
         self._attributes = {}
         self._name = "Cutremur"
-        self._update_interval = update_interval
 
         _LOGGER.debug(
             "Senzorul inițializat cu intervalul de actualizare: %s secunde",
@@ -90,7 +89,7 @@ class InfpEarthquakeSensor(Entity):
 
     async def async_update(self, now=None):
         """Actualizare periodică."""
-        _LOGGER.debug("Actualizare senzor la interval de %s sec.", self._update_interval)
+        _LOGGER.debug("Actualizare senzor la interval de %s secunde.", self._update_interval)
 
         async with aiohttp.ClientSession() as session:
             try:
@@ -98,7 +97,7 @@ class InfpEarthquakeSensor(Entity):
                 raw_data = await self.fetch_data(session)
                 # Parsăm datele utile
                 parsed_data = self.parse_event_data(raw_data)
-                _LOGGER.debug("Datele au fost analizate cu succes")
+                _LOGGER.debug("Datele au fost analizate cu succes.")
 
                 # Exemplu: Magnitudinea ML devine `state` al senzorului
                 self._state = parsed_data.get("mag_ml", "Necunoscut")
@@ -133,7 +132,7 @@ class InfpEarthquakeSensor(Entity):
                 raise Exception(error_message)
 
             raw_data = await response.text()
-            _LOGGER.debug("Datele au fost preluate")
+            _LOGGER.debug("Datele au fost preluate cu succes.")
             return raw_data
 
     @staticmethod
