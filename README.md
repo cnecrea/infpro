@@ -1,4 +1,4 @@
-# Cutremur România (INFP) - Integrare pentru Home Assistant 🌍🌋
+# Cutremur România (INFP) - Integrare pentru Home Assistant 🏠🇷🇴
 
 Această integrare pentru Home Assistant oferă un senzor care monitorizează datele seismice din România, folosind informațiile oficiale de la **Institutul Național pentru Fizica Pământului (INFP)**. Integrarea este configurabilă prin interfața UI și permite personalizarea intervalului de actualizare. 🚀
 
