@@ -54,7 +54,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         async_add_entities([sensor], update_before_add=True)
         _LOGGER.debug("Senzorul a fost adăugat cu succes.")
 
-        # Programează actualizările periodice utilizând coordonatorul dinamic
+        # Programează actualizările periodice
         sensor.set_update_interval(update_interval)
 
     except Exception as e:
@@ -72,6 +72,9 @@ class InfpEarthquakeSensor(Entity):
         self._attributes = {}
         self._name = "Cutremur"
         self._update_task = None
+        
+        # Aici salvăm ultimul ID văzut (pentru a compara dacă s-a schimbat)
+        self._last_event_id = None
 
         _LOGGER.debug(
             "Senzorul inițializat cu intervalul de actualizare: %s secunde",
@@ -122,14 +125,31 @@ class InfpEarthquakeSensor(Entity):
                 parsed_data = self.parse_event_data(raw_data)
                 _LOGGER.debug("Datele au fost analizate cu succes.")
 
-                # Exemplu: Magnitudinea ML devine `state` al senzorului
+                # Magnitudinea ML devine `state` al senzorului
                 self._state = parsed_data.get("mag_ml", "Necunoscut")
 
                 intensity = parsed_data.get("intensity", "I")
                 intensity_text = intensity_to_text(intensity)  # Convertim intensitatea în text
 
+                # Obținem ID-ul curent din datele primite
+                current_event_id = parsed_data.get("smevid", "Necunoscut")
+
+                # Verificăm dacă ID-ul e diferit de cel salvat anterior
+                if self._last_event_id is not None:
+                    if current_event_id != self._last_event_id:
+                        alerta = "Da"
+                    else:
+                        alerta = "Nu"
+                else:
+                    # Dacă nu avem încă un ID salvat, implicit setăm alerta la "Nu"
+                    alerta = "Nu"
+
+                # Actualizăm "ultimul" ID
+                self._last_event_id = current_event_id
+
+                # Setăm atributele senzorului
                 self._attributes = {
-                    "ID": parsed_data.get("smevid"),
+                    "ID": current_event_id,
                     "Magnitudine": self._state,
                     "Magnitudinea Momentului (Mw)": parsed_data.get("mag_mw"),
                     "Ora locală": parsed_data.get("local_time"),
@@ -137,7 +157,8 @@ class InfpEarthquakeSensor(Entity):
                     "Longitudine": parsed_data.get("elon"),
                     "Adâncime (km)": parsed_data.get("depth"),
                     "Zonă": parsed_data.get("location"),
-                    "Intensitate": intensity_text,  # Afișăm intensitatea în text
+                    "Intensitate": intensity_text,
+                    "Alerta": alerta,
                 }
 
                 _LOGGER.debug("Starea senzorului a fost actualizată la: %s", self._state)
