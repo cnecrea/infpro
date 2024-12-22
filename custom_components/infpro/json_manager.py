@@ -7,7 +7,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def get_json_path(hass, domain):
     """Returnează calea către fișierul JSON."""
-    return hass.config.path(f"{domain}_data.json")
+    return os.path.join(hass.config.path("custom_components"), domain, f"{domain}_data.json")
 
 async def read_json(hass, domain):
     """Citește datele din JSON asincron."""
