@@ -64,6 +64,7 @@ trigger:
 condition:
   - condition: numeric_state
     entity_id: sensor.cutremur
+    attribute: Magnitudine (ML)
     above: 4.5
 action:
   - service: notify.mobile_app_your_phone
