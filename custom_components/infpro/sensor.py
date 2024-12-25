@@ -18,28 +18,39 @@ URL = "http://shakemap4.infp.ro/atlas/data/event.pf"
 
 
 def intensity_to_text(intensity):
-    """Convertește intensitatea numerică într-un text prietenos."""
+    """
+    Convertește intensitatea numerică într-un text descriptiv conform scării Mercalli Modificate.
+    
+    Parameters:
+    intensity (str): Intensitatea exprimată cu cifre romane (ex: 'I', 'II', ..., 'XII').
+    
+    Returns:
+    str: O descriere prietenoasă a intensității.
+    """
     if intensity == "I":
-        return "Neresimțit"
+        return "Neresimțită"
     elif intensity in ["II", "III"]:
-        return "Slab"
+        return "Slabă"
     elif intensity == "IV":
-        return "Ușor"
+        return "Ușoară"
     elif intensity == "V":
-        return "Moderat"
+        return "Moderată"
     elif intensity == "VI":
-        return "Puternic"
+        return "Puternică"
     elif intensity == "VII":
-        return "Foarte puternic"
+        return "Foarte puternică"
     elif intensity == "VIII":
-        return "Sever"
+        return "Severă"
     elif intensity == "IX":
-        return "Violeant"
-    elif intensity in ["X", "XI", "XII", "XIII"]:
-        return "Extrem"
+        return "Violentă"
+    elif intensity == "X":
+        return "Extremă"
+    elif intensity == "XI":
+        return "Catastrofală"
+    elif intensity == "XII":
+        return "Apocaliptică"
     else:
-        return "Necunoscut"
-
+        return "Necunoscută"
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
     """Configurează senzorul de cutremur INFP."""
