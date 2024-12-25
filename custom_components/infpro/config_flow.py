@@ -48,6 +48,7 @@ class InfproOptionsFlowHandler(config_entries.OptionsFlow):
 
     def __init__(self, config_entry):
         """Inițializează fluxul de opțiuni."""
+        super().__init__()
         self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
