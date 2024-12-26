@@ -4,14 +4,16 @@
     "step": {
       "user": {
         "title": "Configurează Cutremur România (INFP)",
-        "description": "Introduceți intervalul de actualizare (în secunde).",
+        "description": "Introduceți intervalul de actualizare (în secunde) și selectați un oraș.",
         "data": {
-          "update_interval": "Interval de actualizare (secunde)"
+          "update_interval": "Interval de actualizare (secunde)",
+          "oras": "Selectați un oraș"
         }
       }
     },
     "error": {
-      "invalid_update_interval": "Interval invalid. Trebuie să fie între 10 și 3600."
+      "invalid_update_interval": "Interval invalid. Trebuie să fie între 10 și 3600.",
+      "oras_invalid": "Oraș invalid. Vă rugăm să selectați un oraș din listă."
     },
     "abort": {
       "already_configured": "Integrarea este deja configurată."
@@ -21,14 +23,16 @@
     "step": {
       "init": {
         "title": "Setări suplimentare pentru Cutremur România (INFP)",
-        "description": "Modifică opțiunile dorite.",
+        "description": "Modifică opțiunile dorite, inclusiv intervalul de actualizare și orașul.",
         "data": {
-          "update_interval": "Interval de actualizare (secunde)"
+          "update_interval": "Interval de actualizare (secunde)",
+          "oras": "Selectați un oraș"
         }
       }
     },
     "error": {
-      "invalid_update_interval": "Interval invalid. Trebuie să fie între 10 și 3600."
+      "invalid_update_interval": "Interval invalid. Trebuie să fie între 10 și 3600.",
+      "oras_invalid": "Oraș invalid. Vă rugăm să selectați un oraș din listă."
     }
   }
 }
