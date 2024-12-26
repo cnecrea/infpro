@@ -4,7 +4,7 @@ import os
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL
+from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL, DEFAULT_ORAS, LISTA_ORASE, DISPLAY_ORASE
 from .json_manager import read_json, write_json, get_json_path
 
 _LOGGER = logging.getLogger(__name__)
@@ -13,6 +13,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Configurarea integrării din YAML (dacă este cazul)."""
     _LOGGER.debug("async_setup a fost apelat pentru domeniul %s", DOMAIN)
     return True
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Configurarea integrării dintr-o intrare de configurare."""
@@ -66,6 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except Exception as e:
         _LOGGER.error("Eroare în timpul configurării: %s", e)
         return False
+
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Dezinstalează integrarea."""
