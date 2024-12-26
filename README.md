@@ -1,23 +1,35 @@
+
 # Cutremur România (INFP) - Integrare pentru Home Assistant 🏠🇷🇴
 
-Această integrare pentru Home Assistant oferă un senzor care monitorizează datele seismice din România, folosind informațiile oficiale de la **Institutul Național pentru Fizica Pământului (INFP)**. Integrarea este configurabilă prin interfața UI și permite personalizarea intervalului de actualizare. 🚀
+Această integrare pentru Home Assistant oferă **doi senzori** care monitorizează datele seismice din România, folosind informațiile oficiale de la **Institutul Național pentru Fizica Pământului (INFP)**. Integrarea este configurabilă prin interfața UI și permite personalizarea orașului monitorizat și a intervalului de actualizare. 🚀
 
 ## 🌟 Caracteristici
 
-- **🔍 Monitorizare Cutremure**: 
-  - Monitorizează ultimul cutremur detectat în România.
-
+### Senzor `Cutremur`:
+- **🔍 Monitorizare Generală**:
+  - Urmărește datele generale despre ultimul cutremur detectat.
 - **📊 Atribute disponibile**:
-  - **ID**: ID-ul evenimentului seismic.
+  - **ID Eveniment**: ID-ul evenimentului seismic.
   - **Magnitudine (ML)**: Magnitudinea pe scara locală.
   - **Magnitudinea Momentului (Mw)**: Puterea reală a cutremurului.
-  - **Ora (UTC)**: Ora în format UTC.
   - **Ora locală**: Ora locală a evenimentului.
   - **Coordonate**: Latitudine și longitudine ale epicentrului.
   - **Adâncime (km)**: Adâncimea epicentrului.
   - **Zonă**: Zona epicentrului.
   - **Intensitate**: Intensitatea percepută.
-  - **Alerta**: Da/Nu (folosește atribut pentru automatizări)
+  - **Alerta**: Indică dacă evenimentul este nou.
+
+### Senzor `Date analiză`:
+- **🔍 Monitorizare Impact Oraș**:
+  - Afișează date detaliate despre impactul cutremurului asupra unui oraș specific.
+- **📊 Atribute disponibile**:
+  - **Oraș**: Orașul monitorizat.
+  - **Județ**: Județul în care se află orașul.
+  - **Distanță (km)**: Distanța față de epicentru.
+  - **Accelerația maximă a solului (PGA)**: Mișcarea maximă a solului (procent din accelerația gravitațională).
+  - **Viteza maximă a solului (PGV)**: Mișcarea maximă a solului în cm/s.
+  - **Intensitate**: Gradul perceput al cutremurului.
+  - **Intensitate accelerației**: Intensitatea resimțită a accelerației solului în orașul monitorizat.
 
 ---
 
@@ -27,10 +39,7 @@ Această integrare pentru Home Assistant oferă un senzor care monitorizează da
 1. Instalează integrarea prin HACS sau manual (vezi detaliile de mai jos). 
 2. Adaugă integrarea din meniul **Setări > Dispozitive și Servicii > Adaugă Integrare**.
 3. Specifică intervalul de actualizare (în secunde, între `10` și `3600`).
-
-### ⏱️ Intervalul de actualizare:
-- Poate fi configurat din interfața UI.
-- Toate configurările sunt salvate într-un fișier JSON local specific integrării.
+4. Alege un oraș din lista disponibilă pentru monitorizare.
 
 ---
 
@@ -51,7 +60,7 @@ Această integrare pentru Home Assistant oferă un senzor care monitorizează da
 ## ✨ Exemple de utilizare
 
 ### 🔔 Automatizare bazată pe Magnitudine:
-Creează o automatizare pentru a primi notificări atunci când magnitudinea unui cutremur depășește un anumit prag. 
+Creează o automatizare pentru a primi notificări atunci când magnitudinea unui cutremur depășește un anumit prag.
 
 ```yaml
 alias: Notificare Cutremur
@@ -73,9 +82,27 @@ action:
       message: "Un cutremur cu magnitudinea {{ states('sensor.cutremur') }} a fost detectat."
 mode: single
 ```
+
+### 🔍 Card pentru Dashboard:
+Afișează informații despre cutremure și impactul asupra unui oraș pe interfața Home Assistant.
+
+```yaml
+type: entities
+title: Monitorizare Cutremure
+entities:
+  - entity: sensor.cutremur
+    name: Ultimul Cutremur
+  - entity: sensor.date_analiza
+    name: Date analiză
+```
+
+---
+
 ## 🧑‍💻 Contribuții
 
 Contribuțiile sunt binevenite! Simte-te liber să trimiți un pull request sau să raportezi probleme [aici](https://github.com/cnecrea/infpro/issues).
 
+---
+
 ## 🌟 Suport
-- Dacă îți place această integrare, oferă-i un ⭐ pe [GitHub](https://github.com/cnecrea/infpro/)! 😊
+Dacă îți place această integrare, oferă-i un ⭐ pe [GitHub](https://github.com/cnecrea/infpro/)! 😊
