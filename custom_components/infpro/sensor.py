@@ -11,8 +11,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 
-from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL, DISPLAY_ORASE, DISPLAY_JUDETE
+from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL, DISPLAY_ORASE, DISPLAY_JUDETE, DEFAULT_ORAS, LISTA_JUDET
 from .json_manager import read_json, write_json
+from .json_manager import start_json_writer
+from .json_manager import ensure_json_exists, read_json, write_json
 
 _LOGGER = logging.getLogger(__name__)
 URL = "http://shakemap4.infp.ro/atlas/data/event.pf"
@@ -56,13 +58,41 @@ async def fetch_cities_data(hass: HomeAssistant, event_id: str) -> Optional[Dict
         raw_data = await fetch_data(session, url)
         if raw_data and raw_data.strip():
             parsed_data = parse_cities_data(raw_data)
-            oras_salvat = await get_saved_city(hass)
-            if oras_salvat:
+
+            # Obținem orașul salvat din configurație
+            saved_city = await get_saved_city(hass)
+            if saved_city:
                 filtered_cities = [
-                    city for city in parsed_data.get("orașe", []) if city.get("Oraș") == oras_salvat
+                    city for city in parsed_data.get("orașe", [])
+                    if city.get("Oraș", "").upper() == saved_city.upper()
                 ]
-                return {"orașe": filtered_cities}
-            return parsed_data
+
+                if filtered_cities:
+                    return {"orașe": filtered_cities}
+                else:
+                    _LOGGER.warning(
+                        "Orașul salvat '%s' nu a fost găsit în datele evenimentului. Se va folosi DEFAULT_ORAS: '%s'.",
+                        saved_city,
+                        DEFAULT_ORAS,
+                    )
+            
+            # Dacă orașul salvat nu este găsit, folosim DEFAULT_ORAS
+            default_filtered_cities = [
+                city for city in parsed_data.get("orașe", [])
+                if city.get("Oraș", "").upper() == DEFAULT_ORAS.upper()
+            ]
+            if default_filtered_cities:
+                return {"orașe": default_filtered_cities}
+
+            # Dacă nu există nici DEFAULT_ORAS în listă, logăm eroarea
+            _LOGGER.error(
+                "Orașul implicit '%s' nu a fost găsit în datele evenimentului. Verificați datele primite.",
+                DEFAULT_ORAS,
+            )
+            return {"orașe": []}
+
+        # Logăm dacă nu există date brute
+        _LOGGER.error("Nu s-au găsit date despre orașe pentru evenimentul cu ID-ul %s.", event_id)
     return None
 
 
@@ -259,7 +289,6 @@ class InfpCityImpactSensor(Entity):
 
     @property
     def icon(self):
-        """Pictograma senzorului."""
         return "mdi:sine-wave"
 
     @property
@@ -273,24 +302,9 @@ class InfpCityImpactSensor(Entity):
         }
 
     async def async_added_to_hass(self):
-        """Configurează senzorul când este adăugat în Home Assistant."""
         _LOGGER.debug("(clasa InfpCityImpactSensor) Senzorul '%s' a fost adăugat în HA și începe actualizarea.", self._name)
         self.set_update_interval(self._update_interval)
-        await self.async_update()  # Actualizare inițială imediată
-
-    def set_update_interval(self, update_interval: int):
-        """Setează intervalul de actualizare al senzorului."""
-        if self._update_task:
-            self._update_task()  # Oprim task-ul anterior
-            _LOGGER.debug("(clasa InfpCityImpactSensor) Sarcina de actualizare anterioară a fost oprită pentru '%s'.", self._name)
-        self._update_interval = update_interval
-        self._update_task = async_track_time_interval(
-            self.hass, self.async_update, timedelta(seconds=update_interval)
-        )
-        _LOGGER.debug(
-            "(clasa InfpCityImpactSensor) Intervalul de actualizare pentru '%s' a fost setat la: %s secunde.",
-            self._name, update_interval
-        )
+        await self.async_update()
 
     async def async_update(self, now=None):
         """Actualizează datele pentru senzorul de impact al orașelor."""
@@ -322,6 +336,7 @@ class InfpCityImpactSensor(Entity):
                 raw_intensity = city.get("Intensitate", "I")
                 mapped_intensity = mapping.get(raw_intensity, "Necunoscută")
 
+                # Actualizare stare și atribute
                 self._state = mapped_city_name
                 self._attributes = {
                     "Oraș": self._state,
@@ -332,6 +347,12 @@ class InfpCityImpactSensor(Entity):
                     "Intensitate": mapped_intensity,
                     "Intensitatea accelerației": city.get("Iacc", "-"),
                 }
+
+                # Salvăm orașul în JSON
+                json_data = await read_json(self.hass, DOMAIN) or {}
+                json_data["oras"] = raw_city_name.upper()
+                await write_json(self.hass, DOMAIN, json_data)
+
                 _LOGGER.debug("Actualizare completă pentru senzorul '%s': %s", self._name, self._attributes)
             else:
                 self._state = "Fără date"
@@ -361,9 +382,18 @@ class InfpCityImpactSensor(Entity):
 
 
 ### Funcția de setup
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
+async def async_setup_entry(hass, entry, async_add_entities):
     """Setup senzori pentru integrarea INFP."""
     _LOGGER.debug("Inițiem configurarea senzorilor INFP.")
+    default_data = {"update_interval": 180, "oras": "ALBA IULIA"}
+    
+    # Asigurăm că fișierul JSON există
+    await ensure_json_exists(hass, DOMAIN, default_data)
+
+    # Pornim gestionarea scrierii asincrone
+    await start_json_writer()
+
+    # Continuăm configurarea senzorilor
     data = await read_json(hass, DOMAIN) or {}
     update_interval = data.get("update_interval", DEFAULT_UPDATE_INTERVAL)
 
