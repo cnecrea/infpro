@@ -73,6 +73,11 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Dezinstalează integrarea."""
     _LOGGER.debug("Se dezinstalează integrarea: entry_id=%s, data=%s, options=%s", entry.entry_id, entry.data, entry.options)
 
+    # Verificăm dacă există entități și le oprim
+    for entity in hass.data[DOMAIN].get(entry.entry_id, {}).get("entities", []):
+        if hasattr(entity, "async_will_remove_from_hass"):
+            await entity.async_will_remove_from_hass()
+
     # Dezinstalează platforma `sensor`
     unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor"])
     _LOGGER.debug("Rezultatul dezinstalării platformelor: %s", unload_ok)
@@ -93,7 +98,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     _LOGGER.error("Eroare la ștergerea fișierului JSON %s: %s", json_path, e)
         else:
             _LOGGER.debug("Fișierul JSON nu a fost șters deoarece există alte intrări active.")
-
     else:
         _LOGGER.error("Dezinstalarea platformelor a eșuat.")
 
