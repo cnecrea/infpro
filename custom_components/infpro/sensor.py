@@ -177,7 +177,7 @@ class InfpEarthquakeSensor(Entity):
 
     async def async_added_to_hass(self):
         """Configurează senzorul când este adăugat în Home Assistant."""
-        _LOGGER.debug("(clasa InfpEarthquakeSensor) Senzorul '%s' a fost adăugat în HA și începe actualizarea.", self._name)
+        _LOGGER.debug("Senzorul '%s' a fost adăugat în HA și începe actualizarea.", self._name)
         self.set_update_interval(self._update_interval)
         await self.async_update()  # Actualizare inițială imediată
 
@@ -250,15 +250,22 @@ class InfpEarthquakeSensor(Entity):
         """Setează intervalul de actualizare al senzorului."""
         if self._update_task:
             self._update_task()  # Oprim task-ul anterior
-            _LOGGER.debug("(clasa InfpEarthquakeSensor) Sarcina de actualizare anterioară a fost oprită pentru '%s'.", self._name)
+            _LOGGER.debug("Sarcina de actualizare anterioară a fost oprită pentru '%s'.", self._name)
         self._update_interval = update_interval
         self._update_task = async_track_time_interval(
             self.hass, self.async_update, timedelta(seconds=update_interval)
         )
         _LOGGER.debug(
-            "(clasa InfpEarthquakeSensor) Intervalul de actualizare pentru '%s' a fost setat la: %s secunde.",
+            "Intervalul de actualizare pentru '%s' a fost setat la: %s secunde.",
             self._name, update_interval
         )
+
+    async def async_will_remove_from_hass(self):
+        """Se apelează înainte ca entitatea să fie eliminată din Home Assistant."""
+        _LOGGER.debug("Se oprește senzorul '%s' și se anulează task-urile.", self._name)
+        if self._update_task:
+            self._update_task()  # Anulează task-ul periodic
+            self._update_task = None
 
 ### Clasa InfpCityImpactSensor
 class InfpCityImpactSensor(Entity):
@@ -302,7 +309,8 @@ class InfpCityImpactSensor(Entity):
         }
 
     async def async_added_to_hass(self):
-        _LOGGER.debug("(clasa InfpCityImpactSensor) Senzorul '%s' a fost adăugat în HA și începe actualizarea.", self._name)
+        """Se execută când entitatea este adăugată în Home Assistant."""
+        _LOGGER.debug("Senzorul '%s' a fost adăugat în HA și începe actualizarea.", self._name)
         self.set_update_interval(self._update_interval)
         await self.async_update()
 
@@ -348,10 +356,14 @@ class InfpCityImpactSensor(Entity):
                     "Intensitatea accelerației": city.get("Iacc", "-"),
                 }
 
-                # Salvăm orașul în JSON
+                # Salvăm orașul în JSON doar dacă este necesar
                 json_data = await read_json(self.hass, DOMAIN) or {}
-                json_data["oras"] = raw_city_name.upper()
-                await write_json(self.hass, DOMAIN, json_data)
+                if json_data.get("oras") != raw_city_name.upper():
+                    json_data["oras"] = raw_city_name.upper()
+                    await write_json(self.hass, DOMAIN, json_data)
+                    _LOGGER.debug("Orașul a fost actualizat în JSON: %s", raw_city_name.upper())
+                else:
+                    _LOGGER.debug("Datele nu s-au schimbat, scrierea în JSON este evitată.")
 
                 _LOGGER.debug("Actualizare completă pentru senzorul '%s': %s", self._name, self._attributes)
             else:
@@ -366,20 +378,27 @@ class InfpCityImpactSensor(Entity):
             self._attributes = {"Eroare": str(e)}
             self.async_write_ha_state()
 
+
     def set_update_interval(self, update_interval: int):
         """Setează intervalul de actualizare al senzorului."""
-        if self._update_task:
-            self._update_task()  # Oprim task-ul anterior
-            _LOGGER.debug("(clasa InfpCityImpactSensor) Sarcina de actualizare anterioară a fost oprită pentru '%s'.", self._name)
+        if hasattr(self, '_update_task') and self._update_task:
+            self._update_task()  # Oprim task-ul anterior dacă există
+            _LOGGER.debug("Sarcina de actualizare anterioară a fost oprită pentru '%s'.", self._name)
         self._update_interval = update_interval
         self._update_task = async_track_time_interval(
             self.hass, self.async_update, timedelta(seconds=update_interval)
         )
         _LOGGER.debug(
-            "(clasa InfpCityImpactSensor) Intervalul de actualizare pentru '%s' a fost setat la: %s secunde.",
+            "Intervalul de actualizare pentru '%s' a fost setat la: %s secunde.",
             self._name, update_interval
         )
 
+    async def async_will_remove_from_hass(self):
+        """Se apelează înainte ca entitatea să fie eliminată din Home Assistant."""
+        _LOGGER.debug("Se oprește senzorul '%s' și se anulează task-urile.", self._name)
+        if self._update_task:
+            self._update_task()  # Anulează task-ul periodic
+            self._update_task = None
 
 ### Funcția de setup
 async def async_setup_entry(hass, entry, async_add_entities):
