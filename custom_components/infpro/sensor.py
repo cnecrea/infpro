@@ -2,6 +2,8 @@ import logging
 import asyncio
 import aiohttp
 import re
+import json
+import requests
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 
@@ -24,6 +26,7 @@ def intensity_to_text(intensity: str) -> str:
     """Transformă intensitatea numerică în text."""
     mapping = {
         "I": "Neresimțită",
+        "I-II": "Neresimțită Slabă",
         "II": "Slabă",
         "III": "Slabă",
         "IV": "Ușoară",
@@ -59,7 +62,9 @@ async def fetch_cities_data(hass: HomeAssistant, event_id: str) -> Optional[Dict
         if raw_data and raw_data.strip():
             parsed_data = parse_cities_data(raw_data)
 
-            # Obținem orașul salvat din configurație
+            # Logăm JSON-ul complet pentru debug
+            _LOGGER.debug("Am procesat JSON-ul pentru orașe din %s", url)
+
             saved_city = await get_saved_city(hass)
             if saved_city:
                 filtered_cities = [
@@ -75,8 +80,8 @@ async def fetch_cities_data(hass: HomeAssistant, event_id: str) -> Optional[Dict
                         saved_city,
                         DEFAULT_ORAS,
                     )
-            
-            # Dacă orașul salvat nu este găsit, folosim DEFAULT_ORAS
+
+            # Dacă orașul salvat nu este găsit, folosim DEFAULT_ORAS            
             default_filtered_cities = [
                 city for city in parsed_data.get("orașe", [])
                 if city.get("Oraș", "").upper() == DEFAULT_ORAS.upper()
@@ -91,7 +96,6 @@ async def fetch_cities_data(hass: HomeAssistant, event_id: str) -> Optional[Dict
             )
             return {"orașe": []}
 
-        # Logăm dacă nu există date brute
         _LOGGER.error("Nu s-au găsit date despre orașe pentru evenimentul cu ID-ul %s.", event_id)
     return None
 
@@ -321,7 +325,9 @@ class InfpCityImpactSensor(Entity):
             cities_data = await fetch_cities_data(self.hass, self._current_event_id)
 
             mapping = {
+                "-": "-",
                 "I": "Neresimțită",
+                "I-II": "Neresimțită - Slabă",
                 "II": "Slabă",
                 "III": "Slabă",
                 "IV": "Ușoară",
