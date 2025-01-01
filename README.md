@@ -1,3 +1,5 @@
+![logo](https://github.com/user-attachments/assets/4bef00a2-ff4b-4494-9d8a-ed3740671c04)
+
 
 # Cutremur România (INFP) - Integrare pentru Home Assistant 🏠🇷🇴
 
