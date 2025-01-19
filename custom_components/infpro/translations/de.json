@@ -1,0 +1,38 @@
+{
+  "title": "Erdbeben Rumänien (INFP)",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Konfigurieren Sie Erdbeben Rumänien (INFP)",
+        "description": "Geben Sie das Aktualisierungsintervall (in Sekunden) ein und wählen Sie eine Stadt aus.",
+        "data": {
+          "update_interval": "Aktualisierungsintervall (Sekunden)",
+          "oras": "Wählen Sie eine Stadt aus"
+        }
+      }
+    },
+    "error": {
+      "invalid_update_interval": "Ungültiges Intervall. Es muss zwischen 10 und 3600 liegen.",
+      "oras_invalid": "Ungültige Stadt. Bitte wählen Sie eine Stadt aus der Liste aus."
+    },
+    "abort": {
+      "already_configured": "Die Integration ist bereits konfiguriert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Zusätzliche Einstellungen für Erdbeben Rumänien (INFP)",
+        "description": "Ändern Sie die gewünschten Optionen, einschließlich Aktualisierungsintervall und Stadt.",
+        "data": {
+          "update_interval": "Aktualisierungsintervall (Sekunden)",
+          "oras": "Wählen Sie eine Stadt aus"
+        }
+      }
+    },
+    "error": {
+      "invalid_update_interval": "Ungültiges Intervall. Es muss zwischen 10 und 3600 liegen.",
+      "oras_invalid": "Ungültige Stadt. Bitte wählen Sie eine Stadt aus der Liste aus."
+    }
+  }
+}
