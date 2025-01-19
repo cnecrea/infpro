@@ -1,0 +1,38 @@
+{
+  "title": "Earthquake Romania (INFP)",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure Earthquake Romania (INFP)",
+        "description": "Enter the update interval (in seconds) and select a city.",
+        "data": {
+          "update_interval": "Update interval (seconds)",
+          "oras": "Select a city"
+        }
+      }
+    },
+    "error": {
+      "invalid_update_interval": "Invalid interval. Must be between 10 and 3600.",
+      "oras_invalid": "Invalid city. Please select a city from the list."
+    },
+    "abort": {
+      "already_configured": "The integration is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Additional Settings for Earthquake Romania (INFP)",
+        "description": "Modify the desired options, including update interval and city.",
+        "data": {
+          "update_interval": "Update interval (seconds)",
+          "oras": "Select a city"
+        }
+      }
+    },
+    "error": {
+      "invalid_update_interval": "Invalid interval. Must be between 10 and 3600.",
+      "oras_invalid": "Invalid city. Please select a city from the list."
+    }
+  }
+}
