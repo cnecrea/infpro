@@ -1,15 +1,4 @@
 {
   "name": "Cutremur România (INFP)",
-  "content_in_root": false,
-  "domains": ["infpro"],
-  "homeassistant": "2021.6.0",
-  "render_readme": true,
-  "iot_class": "cloud_polling",
-  "zip_release": true,
-  "filename": "infpro.zip",
-  "persistent_directory": "userfiles",
-  "codeowners": ["@cnecrea"],
-  "documentation": "https://github.com/cnecrea/infpro",
-  "issue_tracker": "https://github.com/cnecrea/infpro/issues",
-  "version": "1.1.0"
+    "render_readme": true
 }
