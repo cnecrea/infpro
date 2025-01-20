@@ -3,9 +3,12 @@ from datetime import timedelta
 import os
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL, DEFAULT_ORAS, LISTA_ORASE, DISPLAY_ORASE
 from .json_manager import read_json, write_json, get_json_path
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 _LOGGER = logging.getLogger(__name__)
 
