@@ -7,6 +7,19 @@ Această integrare pentru Home Assistant oferă **doi senzori** care monitorizea
 
 ## 🌟 Caracteristici
 
+### Senzor `Analiză date`:
+- **🔍 Monitorizare Impact Oraș**:
+  - Afișează date detaliate despre impactul cutremurului asupra unui oraș specific.
+- **📊 Atribute disponibile**:
+  - **Oraș**: Orașul monitorizat.
+  - **Județ**: Județul în care se află orașul.
+  - **Distanță (km)**: Distanța față de epicentru.
+  - **Accelerația maximă a solului (PGA)**: Mișcarea maximă a solului (procent din accelerația gravitațională).
+  - **Viteza maximă a solului (PGV)**: Mișcarea maximă a solului în cm/s.
+  - **Intensitate**: Gradul perceput al cutremurului.
+  - **Intensitate accelerației**: Intensitatea resimțită a accelerației solului în orașul monitorizat.
+
+
 ### Senzor `Cutremur`:
 - **🔍 Monitorizare Generală**:
   - Urmărește datele generale despre ultimul cutremur detectat.
@@ -21,17 +34,18 @@ Această integrare pentru Home Assistant oferă **doi senzori** care monitorizea
   - **Intensitate**: Intensitatea percepută.
   - **Alerta**: Indică dacă evenimentul este nou.
 
-### Senzor `Date analiză`:
-- **🔍 Monitorizare Impact Oraș**:
-  - Afișează date detaliate despre impactul cutremurului asupra unui oraș specific.
+### Senzor `Record cutremur`:
+- **🔍 Monitorizare Generală**:
+  - Urmărește și înregistrează detaliile celui mai mare cutremur detectat în ultima perioadă, bazat pe datele stocate în fișierul record.json.
 - **📊 Atribute disponibile**:
-  - **Oraș**: Orașul monitorizat.
-  - **Județ**: Județul în care se află orașul.
-  - **Distanță (km)**: Distanța față de epicentru.
-  - **Accelerația maximă a solului (PGA)**: Mișcarea maximă a solului (procent din accelerația gravitațională).
-  - **Viteza maximă a solului (PGV)**: Mișcarea maximă a solului în cm/s.
-  - **Intensitate**: Gradul perceput al cutremurului.
-  - **Intensitate accelerației**: Intensitatea resimțită a accelerației solului în orașul monitorizat.
+  - **ID Eveniment**: ID-ul evenimentului seismic.
+  - **Magnitudine (ML)**: Magnitudinea pe scara locală.
+  - **Magnitudinea Momentului (Mw)**: Puterea reală a cutremurului.
+  - **Ora locală**: Ora locală a evenimentului.
+  - **Coordonate**: Latitudine și longitudine ale epicentrului.
+  - **Adâncime (km)**: Adâncimea epicentrului.
+  - **Zonă**: Zona epicentrului.
+  - **Intensitate**: Intensitatea percepută.
 
 ---
 
