@@ -1,12 +1,14 @@
 {
-    "domain": "infpro",
-    "name": "Cutremur România (INFP)",
-    "codeowners": ["@cnecrea"],
-    "config_flow": true,
-    "dependencies": [],
-    "documentation": "https://github.com/cnecrea/infpro",
-    "iot_class": "cloud_polling",
-    "issue_tracker": "https://github.com/cnecrea/infpro/issues",
-    "requirements": [],
-    "version": "1.2.0"
+  "domain": "infpro",
+  "name": "Cutremur România (INFP)",
+  "codeowners": [
+    "@cnecrea"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/cnecrea/infpro",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/cnecrea/infpro/issues",
+  "requirements": [],
+  "version": "2.0.0"
 }
