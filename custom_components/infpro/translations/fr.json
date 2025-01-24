@@ -1,18 +1,18 @@
 {
-  "title": "Tremblements de Terre en Roumanie (INFP)",
+  "title": "Séismes en Roumanie (INFP)",
   "config": {
     "step": {
       "user": {
-        "title": "Configurer Tremblements de Terre en Roumanie (INFP)",
+        "title": "Configurer Séismes en Roumanie (INFP)",
         "description": "Entrez l'intervalle de mise à jour (en secondes) et sélectionnez une ville.",
         "data": {
-          "update_interval": "Intervalle de mise à jour (secondes)",
-          "oras": "Sélectionnez une ville"
+          "update_interval": "Intervalle de mise à jour (en secondes)",
+          "oras_id": "Sélectionnez la ville à surveiller"
         }
       }
     },
     "error": {
-      "invalid_update_interval": "Intervalle invalide. Doit être compris entre 10 et 3600.",
+      "invalid_update_interval": "Intervalle invalide. Il doit être compris entre 10 et 3600.",
       "oras_invalid": "Ville invalide. Veuillez sélectionner une ville dans la liste."
     },
     "abort": {
@@ -22,16 +22,16 @@
   "options": {
     "step": {
       "init": {
-        "title": "Paramètres Supplémentaires pour Tremblements de Terre en Roumanie (INFP)",
+        "title": "Paramètres supplémentaires pour Séismes en Roumanie (INFP)",
         "description": "Modifiez les options souhaitées, y compris l'intervalle de mise à jour et la ville.",
         "data": {
-          "update_interval": "Intervalle de mise à jour (secondes)",
-          "oras": "Sélectionnez une ville"
+          "update_interval": "Intervalle de mise à jour (en secondes)",
+          "oras_id": "Changer la ville surveillée"
         }
       }
     },
     "error": {
-      "invalid_update_interval": "Intervalle invalide. Doit être compris entre 10 et 3600.",
+      "invalid_update_interval": "Intervalle invalide. Il doit être compris entre 10 et 3600.",
       "oras_invalid": "Ville invalide. Veuillez sélectionner une ville dans la liste."
     }
   }
