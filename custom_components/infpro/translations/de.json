@@ -1,13 +1,13 @@
 {
-  "title": "Erdbeben Rumänien (INFP)",
+  "title": "Erdbeben in Rumänien (INFP)",
   "config": {
     "step": {
       "user": {
-        "title": "Konfigurieren Sie Erdbeben Rumänien (INFP)",
+        "title": "Erdbeben in Rumänien (INFP) konfigurieren",
         "description": "Geben Sie das Aktualisierungsintervall (in Sekunden) ein und wählen Sie eine Stadt aus.",
         "data": {
-          "update_interval": "Aktualisierungsintervall (Sekunden)",
-          "oras": "Wählen Sie eine Stadt aus"
+          "update_interval": "Aktualisierungsintervall (in Sekunden)",
+          "oras_id": "Wählen Sie die zu überwachende Stadt aus"
         }
       }
     },
@@ -22,11 +22,11 @@
   "options": {
     "step": {
       "init": {
-        "title": "Zusätzliche Einstellungen für Erdbeben Rumänien (INFP)",
-        "description": "Ändern Sie die gewünschten Optionen, einschließlich Aktualisierungsintervall und Stadt.",
+        "title": "Zusätzliche Einstellungen für Erdbeben in Rumänien (INFP)",
+        "description": "Passen Sie die gewünschten Optionen an, einschließlich des Aktualisierungsintervalls und der Stadt.",
         "data": {
-          "update_interval": "Aktualisierungsintervall (Sekunden)",
-          "oras": "Wählen Sie eine Stadt aus"
+          "update_interval": "Aktualisierungsintervall (in Sekunden)",
+          "oras_id": "Ändern Sie die überwachte Stadt"
         }
       }
     },
