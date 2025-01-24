@@ -4,16 +4,16 @@
     "step": {
       "user": {
         "title": "Configurar Terremotos en Rumanía (INFP)",
-        "description": "Ingrese el intervalo de actualización (en segundos) y seleccione una ciudad.",
+        "description": "Introduzca el intervalo de actualización (en segundos) y seleccione una ciudad.",
         "data": {
-          "update_interval": "Intervalo de actualización (segundos)",
-          "oras": "Seleccione una ciudad"
+          "update_interval": "Intervalo de actualización (en segundos)",
+          "oras_id": "Seleccione la ciudad a monitorear"
         }
       }
     },
     "error": {
-      "invalid_update_interval": "Intervalo no válido. Debe estar entre 10 y 3600.",
-      "oras_invalid": "Ciudad no válida. Por favor seleccione una ciudad de la lista."
+      "invalid_update_interval": "Intervalo inválido. Debe estar entre 10 y 3600.",
+      "oras_invalid": "Ciudad inválida. Por favor, seleccione una ciudad de la lista."
     },
     "abort": {
       "already_configured": "La integración ya está configurada."
@@ -22,17 +22,17 @@
   "options": {
     "step": {
       "init": {
-        "title": "Configuraciones Adicionales para Terremotos en Rumanía (INFP)",
+        "title": "Configuraciones adicionales para Terremotos en Rumanía (INFP)",
         "description": "Modifique las opciones deseadas, incluido el intervalo de actualización y la ciudad.",
         "data": {
-          "update_interval": "Intervalo de actualización (segundos)",
-          "oras": "Seleccione una ciudad"
+          "update_interval": "Intervalo de actualización (en segundos)",
+          "oras_id": "Cambiar la ciudad monitoreada"
         }
       }
     },
     "error": {
-      "invalid_update_interval": "Intervalo no válido. Debe estar entre 10 y 3600.",
-      "oras_invalid": "Ciudad no válida. Por favor seleccione una ciudad de la lista."
+      "invalid_update_interval": "Intervalo inválido. Debe estar entre 10 y 3600.",
+      "oras_invalid": "Ciudad inválida. Por favor, seleccione una ciudad de la lista."
     }
   }
 }
