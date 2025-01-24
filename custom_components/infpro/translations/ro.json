@@ -3,11 +3,11 @@
   "config": {
     "step": {
       "user": {
-        "title": "Configurează Cutremur România (INFP)",
+        "title": "Configurați integrarea Cutremur România (INFP)",
         "description": "Introduceți intervalul de actualizare (în secunde) și selectați un oraș.",
         "data": {
-          "update_interval": "Interval de actualizare (secunde)",
-          "oras": "Selectați un oraș"
+          "update_interval": "Interval de actualizare (în secunde)",
+          "oras_id": "Selectați orașul de monitorizare"
         }
       }
     },
@@ -25,8 +25,8 @@
         "title": "Setări suplimentare pentru Cutremur România (INFP)",
         "description": "Modifică opțiunile dorite, inclusiv intervalul de actualizare și orașul.",
         "data": {
-          "update_interval": "Interval de actualizare (secunde)",
-          "oras": "Selectați un oraș"
+          "update_interval": "Interval de actualizare (în secunde)",
+          "oras_id": "Selectați orașul de monitorizare"
         }
       }
     },
