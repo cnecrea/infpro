@@ -40,7 +40,7 @@ jobs:
           fi
 
           # Definim calea către manifest.json
-          MANIFEST_PATH="custom_components/infpronia/manifest.json"
+          MANIFEST_PATH="custom_components/infpro/manifest.json"
 
           # Verificăm dacă fișierul există
           if [ ! -f "$MANIFEST_PATH" ]; then
@@ -89,8 +89,8 @@ jobs:
           PAT: ${{ secrets.PAT_TOKEN }}  # Token-ul salvat ca secret
         run: |
           # Configurare GitHub Actions bot
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "infpro-release-bot"
+          git config user.email "infpro-bot@users.noreply.github.com"
           
           # Setează URL-ul remote pentru autentificare cu token
           git remote set-url origin https://x-access-token:${PAT}@github.com/cnecrea/infpro.git
@@ -119,7 +119,7 @@ jobs:
             ## Lansare de tip draft
             - Această lansare a fost generată automat de GitHub Actions.
             - Verificați conținutul înainte de publicare.
-          files: dist/infpronia.zip  # Include fișierul ZIP în release
+          files: dist/infpro.zip  # Include fișierul ZIP în release
           draft: true  # Creează release-ul ca draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Token-ul implicit GitHub
