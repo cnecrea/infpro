@@ -1,5 +1,3 @@
-"""Definiția senzorului Cutremur (principal) și RecordCutremur (secundar) pentru integrarea INFP."""
-
 import logging
 import json
 import os
