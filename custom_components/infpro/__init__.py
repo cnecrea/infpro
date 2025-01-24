@@ -1,107 +1,68 @@
+"""Integrarea INFP pentru Home Assistant."""
 import logging
-from datetime import timedelta
-import os
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL, DEFAULT_ORAS, LISTA_ORASE, DISPLAY_ORASE
-from .json_manager import read_json, write_json, get_json_path
+from .const import DOMAIN, PLATFORMS
+from .coordinator import InfProDataUpdateCoordinator
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 _LOGGER = logging.getLogger(__name__)
 
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Configurarea integrării din YAML (dacă este cazul)."""
-    _LOGGER.debug("async_setup a fost apelat pentru domeniul %s", DOMAIN)
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Configurează integrarea folosind un config entry."""
+    _LOGGER.debug("Inițiere configurare pentru integrarea INFP.")
+
+    # Inițializare stocare date pentru domeniu
+    hass.data.setdefault(DOMAIN, {})
+
+    # Preluare interval de actualizare
+    update_interval = entry.options.get("UPDATE_INTERVAL", 30)
+    _LOGGER.debug(
+        "Intervalul de actualizare setat pentru coordonator: %s secunde.", update_interval
+    )
+
+    # Creare coordonator
+    _LOGGER.debug("Inițializare coordonator pentru integrarea INFP.")
+    coordinator = InfProDataUpdateCoordinator(
+        hass, update_interval=update_interval
+    )
+
+    # Prima actualizare a datelor
+    try:
+        await coordinator.async_config_entry_first_refresh()
+        _LOGGER.debug("Prima actualizare a datelor realizată cu succes.")
+    except Exception as err:
+        _LOGGER.error("Eroare la prima actualizare a datelor: %s", err)
+        return False
+
+    # Salvare coordonator în stocarea domeniului
+    hass.data[DOMAIN][entry.entry_id] = {
+        "coordinator": coordinator,
+    }
+
+    # Încărcare platforme asociate
+    _LOGGER.debug("Încărcare platforme: %s.", PLATFORMS)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    _LOGGER.debug("Integrarea INFP a fost configurată cu succes.")
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Configurarea integrării dintr-o intrare de configurare."""
-    _LOGGER.debug("Se configurează integrarea: data=%s, options=%s", entry.data, entry.options)
-
-    try:
-        # Citește datele din JSON sau folosește opțiunile entry
-        data = await read_json(hass, DOMAIN)
-        if not data:  # Dacă fișierul JSON este gol/inexistent
-            data = {"update_interval": entry.options.get("update_interval", DEFAULT_UPDATE_INTERVAL)}
-            await write_json(hass, DOMAIN, data)  # Salvează valorile din entry în JSON
-            _LOGGER.debug("Fișierul JSON a fost creat cu datele: %s", data)
-
-        update_interval = data.get("update_interval", DEFAULT_UPDATE_INTERVAL)
-        _LOGGER.debug("Intervalul de actualizare din JSON în timpul configurării: %s secunde", update_interval)
-
-        # Actualizează direct entry.options dacă este necesar
-        if entry.options.get("update_interval") != update_interval:
-            hass.config_entries.async_update_entry(
-                entry,
-                options={"update_interval": update_interval},
-            )
-            _LOGGER.debug("Opțiunile au fost actualizate din JSON: %s", entry.options)
-
-        # Salvează `update_interval` în `hass.data` pentru acces rapid
-        hass.data.setdefault(DOMAIN, {})
-        hass.data[DOMAIN][entry.entry_id] = {
-            "update_interval": update_interval
-        }
-
-        # Reconfigurează dacă există deja un `coordinator`
-        if "coordinator" in hass.data[DOMAIN][entry.entry_id]:
-            coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
-            coordinator.update_interval = timedelta(seconds=update_interval)
-            _LOGGER.debug("Intervalul de actualizare al coordinatorului a fost actualizat la %s secunde.", update_interval)
-        else:
-            # Creează un nou coordinator dacă nu există
-            coordinator = DataUpdateCoordinator(
-                hass,
-                _LOGGER,
-                name=f"{DOMAIN} Update Coordinator",
-                update_interval=timedelta(seconds=update_interval),
-            )
-            hass.data[DOMAIN][entry.entry_id]["coordinator"] = coordinator
-
-        # Încarcă platformele necesare (de exemplu, `sensor`)
-        await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
-        _LOGGER.debug("Configurarea integrării a fost finalizată cu succes.")
-        return True
-
-    except Exception as e:
-        _LOGGER.error("Eroare în timpul configurării: %s", e)
-        return False
-
-
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Dezinstalează integrarea."""
-    _LOGGER.debug("Se dezinstalează integrarea: entry_id=%s, data=%s, options=%s", entry.entry_id, entry.data, entry.options)
+    """Elimină o configurație."""
+    _LOGGER.debug("Inițiere proces de dezinstalare pentru integrarea INFP.")
 
-    # Verificăm dacă există entități și le oprim
-    for entity in hass.data[DOMAIN].get(entry.entry_id, {}).get("entities", []):
-        if hasattr(entity, "async_will_remove_from_hass"):
-            await entity.async_will_remove_from_hass()
-
-    # Dezinstalează platforma `sensor`
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor"])
-    _LOGGER.debug("Rezultatul dezinstalării platformelor: %s", unload_ok)
-
+    # Dezinstalare platforme asociate
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        # Șterge datele asociate cu această integrare
-        hass.data[DOMAIN].pop(entry.entry_id, None)
-        _LOGGER.debug("Integrarea a fost dezinstalată cu succes.")
+        # Eliminare coordonator din stocare
+        _LOGGER.debug(
+            "Coordonatorul a fost eliminat din stocare pentru intrarea cu ID-ul: %s.",
+            entry.entry_id,
+        )
 
-        # Șterge fișierul JSON doar dacă nu mai există alte intrări pentru această integrare
-        if not hass.config_entries.async_entries(DOMAIN):
-            json_path = get_json_path(hass, DOMAIN)
-            if os.path.exists(json_path):
-                try:
-                    os.remove(json_path)
-                    _LOGGER.debug("Fișierul JSON %s a fost șters.", json_path)
-                except Exception as e:
-                    _LOGGER.error("Eroare la ștergerea fișierului JSON %s: %s", json_path, e)
-        else:
-            _LOGGER.debug("Fișierul JSON nu a fost șters deoarece există alte intrări active.")
-    else:
-        _LOGGER.error("Dezinstalarea platformelor a eșuat.")
-
+    _LOGGER.debug("Integrarea INFP a fost dezinstalată cu succes.")
     return unload_ok
