@@ -73,9 +73,10 @@ class InfProConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class InfProOptionsFlow(config_entries.OptionsFlow):
     """Flux de opțiuni pentru integrarea INFP."""
 
-    def __init__(self, config_entry):
+    def __init__(self, config_entry: config_entries.ConfigEntry):
         """Inițializează fluxul de opțiuni."""
-        self.config_entry = config_entry
+        super().__init__()
+        self._config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
         """Pasul inițial pentru fluxul de opțiuni."""
