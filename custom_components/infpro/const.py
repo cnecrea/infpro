@@ -8,7 +8,7 @@ PLATFORMS = ["sensor"]
 
 # URL-urile pentru API
 BASE_URL = "https://dev.syspro.ro"
-URL_CUTREMUR = f"{BASE_URL}/homeassistant/infpro/infpro.json"
+URL_CUTREMUR = f"{BASE_URL}/homeassistant/date_api.json"
 
 # Lista codurilor de județe
 LISTA_JUDET = [
