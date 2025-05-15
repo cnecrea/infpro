@@ -1,4 +1,5 @@
 {
   "name": "Cutremur România (INFP)",
-  "render_readme": true
+  "render_readme": true,
+  "country": ["RO"]
 }
